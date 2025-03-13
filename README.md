@@ -1,24 +1,58 @@
-# All in one Flutter Sample App
+# paytm_allinonesdk
 
-Sample for all in one integration using flutter plugin
+## Use this package as a library
 
-## Getting Started
-
-```
-flutter pub get
-```
-
-### For Ios
-
-In iOS directory
+1. Depend on it
 
 ```
-pod install
+Add this to your package's pubspec.yaml file:
 
+dependencies:
+  paytm_allinonesdk: ^1.2.7
 ```
 
-Run ios and android app
+2. Install it
 
+```
+You can install packages from the command line:
 
+with Flutter:
 
-* Developer Docs: https://developer.paytm.com/docs/all-in-one-sdk/hybrid-apps/flutter/
+$ flutter pub get
+Alternatively, your editor might support flutter pub get. Check the docs for your editor to learn more.
+```
+
+3. Import it
+
+```
+Now in your Dart code, you can use:
+
+import 'package:paytm_allinonesdk/paytm_allinonesdk.dart';
+```
+
+4. Call transaction method
+
+```
+    try {
+      var response = AllInOneSdk.startTransaction(
+          mid, orderId, amount, txnToken, "", isStaging, restrictAppInvoke);
+      response.then((value) {
+        print(value);
+        setState(() {
+          result = value.toString();
+        });
+      }).catchError((onError) {
+        if (onError is PlatformException) {
+          setState(() {
+            result = onError.message + " \n  " + onError.details.toString();
+          });
+        } else {
+          setState(() {
+            result = onError.toString();
+          });
+        }
+      });
+    } catch (err) {
+      result = err.message;
+    }
+```

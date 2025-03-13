@@ -9,7 +9,6 @@ import androidx.annotation.NonNull
 import com.paytm.pgsdk.PaytmOrder
 import com.paytm.pgsdk.PaytmPaymentTransactionCallback
 import com.paytm.pgsdk.TransactionManager
-import io.flutter.embedding.engine.loader.FlutterApplicationInfo
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -17,19 +16,17 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
-import io.flutter.plugin.common.PluginRegistry.Registrar
-import io.flutter.plugin.platform.PlatformPlugin
 import org.json.JSONObject
 import kotlin.IllegalStateException
 
 /** AllInOneSdkPlugin */
-class AllInOneSdkPlugin : FlutterPlugin, ActivityResultListener, MethodCallHandler, ActivityAware {
+class AllInOneSdkPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private val REQ_CODE = 158
     private lateinit var channel: MethodChannel
     private lateinit var result: Result
     private var activity: Activity? = null
     private var isCallbackProvided = false
+    private lateinit var activityBinding: ActivityPluginBinding
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "allinonesdk")
@@ -214,14 +211,26 @@ class AllInOneSdkPlugin : FlutterPlugin, ActivityResultListener, MethodCallHandl
     }
 
     override fun onDetachedFromActivity() {
+        activityBinding.removeActivityResultListener { requestCode, resultCode, data ->
+            onActivityResult(requestCode, resultCode, data)
+        }
+        activity = null;
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+        activityBinding = binding;
+        binding.addActivityResultListener { requestCode, resultCode, data ->
+            onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
-        binding.addActivityResultListener(this)
+        activityBinding = binding;
+        binding.addActivityResultListener { requestCode, resultCode, data ->
+            onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
